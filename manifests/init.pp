@@ -52,6 +52,10 @@
 #   [notification_topics] AMQP topics to publish to when using the RPC notification driver.
 #   [control_exchange] AMQP exchange to connect to if using RabbitMQ or Qpid
 #
+#   [*manage_service*]
+#   (optional) Whether to start/stop the service
+#   Default to true
+#
 #   [*public_bind_host*]
 #   (optional) The IP address of the public network interface to listen on
 #   Deprecates bind_host
@@ -169,6 +173,7 @@ class keystone(
   $cache_dir             = '/var/cache/keystone',
   $memcache_servers      = false,
   $enabled               = true,
+  $manage_service        = true,
   $sql_connection        = 'sqlite:////var/lib/keystone/keystone.db',
   $idle_timeout          = '200',
   $enable_pki_setup      = true,
@@ -403,14 +408,8 @@ class keystone(
     keystone_config { 'DEFAULT/rabbit_ha_queues': value => false }
   }
 
-  if $enabled {
-    $service_ensure = 'running'
-  } else {
-    $service_ensure = 'stopped'
-  }
-
   service { 'keystone':
-    ensure     => $service_ensure,
+    ensure     => $manage_service,
     name       => $::keystone::params::service_name,
     enable     => $enabled,
     hasstatus  => true,
